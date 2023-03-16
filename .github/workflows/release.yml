@@ -1,0 +1,75 @@
+name: Release
+
+on:
+  push:
+    tags: [v*]
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash # necessary for windows
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macOS-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      PROJECT_NAME: nimpretty_t
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Cache nimble
+        id: cache-nimble
+        uses: actions/cache@v3
+        with:
+          path: ~/.nimble
+          key: ${{ runner.os }}-nimble-${{ hashFiles('*.nimble') }}
+          restore-keys: |
+            ${{ runner.os }}-nimble-
+
+      - name: Setup nim
+        uses: iffy/install-nim@v4
+
+      - name: Build
+        run: nimble build -Y
+
+      - name: Prepare artifacts
+        run: |
+          TAG=$GITHUB_REF_NAME
+
+          if [[ $RUNNER_OS == "Windows" ]]; then
+            ARTIFACT=$PROJECT_NAME-$TAG-$RUNNER_OS.exe
+            PROJECT_NAME=$PROJECT_NAME.exe
+          else
+            ARTIFACT=$PROJECT_NAME-$TAG-$RUNNER_OS
+          fi
+
+          ARTIFACT=$(echo $ARTIFACT | tr '[:upper:]' '[:lower:]') # transform to lowercase
+          mv $PROJECT_NAME $ARTIFACT
+
+          echo ARTIFACT_PATH=$ARTIFACT >> $GITHUB_ENV
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: results
+          path: ${{ env.ARTIFACT_PATH }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: results
+          path: ./artifacts
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ./artifacts/*.zip

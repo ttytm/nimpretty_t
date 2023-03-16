@@ -1,5 +1,10 @@
 # nimpretty_t
 
+<a href="https://github.com/tobealive/nimpretty_t/actions/workflows/build.yml?query=branch%3Amain" target="_blank">
+    <img alt="crates.io" src="https://img.shields.io/github/actions/workflow/status/tobealive/nimpretty_t/build.yml?branch=main&style=flat-square" />
+</a>
+<br><br>
+
 A simple `nimpretty` wrapper that extends formatting for files with tab indentation.
 
 ## Intro

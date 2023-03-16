@@ -31,7 +31,7 @@ _Note: Since source code filters usually block formatting for good reasons, othe
   ```
 
 - Or grab a binary from the releases page<br>
-  https://github.com/nim-lang/Nim
+  [nimpretty_t/releases](https://github.com/tobealive/nimpretty_t/releases)
 
 - Or build from source (Linux example)
 

@@ -29,7 +29,7 @@ _Note: Since source code filters usually block formatting for good reasons, othe
 
 ### Installation
 
-- (Not yet available) Use nims default package manager nimble.
+- Use nims default package manager nimble.
 
   ```sh
   nimble install nimpretty_t

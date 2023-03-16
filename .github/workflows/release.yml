@@ -35,7 +35,7 @@ jobs:
         uses: iffy/install-nim@v4
 
       - name: Build
-        run: nimble build -Y
+        run: nimble build -Y -d:release
 
       - name: Prepare artifacts
         run: |
@@ -67,9 +67,10 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: results
-          path: ./artifacts
+          path: artifacts
 
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          files: ./artifacts/*.zip
+          token: ${{ secrets.SECRET_TOKEN }}
+          files: artifacts/*

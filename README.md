@@ -5,9 +5,9 @@
 </a>
 <br><br>
 
-A simple `nimpretty` wrapper that extends formatting for files with tab indentation.
+A `nimpretty` wrapper that extends its formatting capabilities to files with tab indentation.
 
-## Intro
+## Overview
 
 To allow tab characters for indentation, we can put a source filter at the beginning of a nim file.
 
@@ -35,8 +35,7 @@ _Note: Since source code filters usually block formatting for good reasons, othe
   nimble install nimpretty_t
   ```
 
-- Or grab a binary from the releases page<br>
-  [nimpretty_t/releases](https://github.com/tobealive/nimpretty_t/releases)
+- Grab a binary from the [releases page][10]
 
 - Or build from source (Linux example)
 
@@ -47,7 +46,13 @@ _Note: Since source code filters usually block formatting for good reasons, othe
   ln -s src/nimpretty_t ~/.local/bin/
   ```
 
-### Format on Save
+### Usage
+
+```sh
+nimpretty_t [FILEPATH] [OPTIONS] [see nimpretty -h for valid options]
+```
+
+#### Format on Save
 
 - **Neovim**
 
@@ -70,6 +75,8 @@ _Note: Since source code filters usually block formatting for good reasons, othe
   	}),
   })
   ```
+
+  A complementary tool regarding indentation for neovim is [tabs-vs-spaces.nvim][20]
 
 - **VSCode / VSCodium**
 
@@ -96,4 +103,8 @@ It's early software. Things like mixing indentation styles might result in unexp
 
 ## Credits
 
-https://github.com/nim-lang/Nim
+[nim-lang/Nim][30]
+
+[10]: https://github.com/tobealive/nimpretty_t/releases
+[20]: https://github.com/tenxsoydev/tabs-vs-spaces.nvim
+[30]: https://github.com/nim-lang/Nim

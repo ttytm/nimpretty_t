@@ -1,86 +1,91 @@
 # nimpretty_t
 
-<a href="https://github.com/tobealive/nimpretty_t/actions/workflows/build.yml?query=branch%3Amain" target="_blank">
-    <img alt="crates.io" src="https://img.shields.io/github/actions/workflow/status/tobealive/nimpretty_t/build.yml?branch=main&style=flat-square" />
-</a>
-<br><br>
+[badge__build]: https://img.shields.io/github/actions/workflow/status/ttytm/nimpretty_t/build.yml?branch=main&logo=github&logoColor=C0CAF5&labelColor=333
+[badge__version]: https://img.shields.io/github/v/release/ttytm/nimpretty_t?logo=task&logoColor=C0CAF5&labelColor=333&color=ffc200
 
-A `nimpretty` wrapper that extends its formatting capabilities to files with tab indentation.
+[![][badge__build]](https://github.com/ttytm/nimpretty_t/actions?query=branch%3Amain)
+[![][badge__version]](https://github.com/ttytm/nimpretty_t/releases/latest)
+
+Enables usage of `nimpretty` on paths with tab indentation and allows to view formatting diffs.
+
+## Quick start
+
+- [Installation](#installation)
+- [Editor Setup](#editor-setup)
+  - [Neovim](#neovim)
+  - [VS Code / Codium](#vs-code--codium)
 
 ## Overview
 
-To allow tab characters for indentation, we can put a source filter at the beginning of a nim file.
+### Usage
 
 ```
-#? replace(sub = "\t", by = "  ")
+Usage: nimpretty_t [options] <path>...
+
+Formatter and diff viewer utilizing nimpretty.
+By default, formatted output is written to stdout.
+
+Options:
+  -w  --write           Modifies non-conforming files in-place.
+  -l  --list            Prints paths of non-conforming files. Exits with an error if any are found.
+  -d  --diff            Prints differences of non-conforming files. Exits with an error if any are found.
+  -i  --indentation     Sets the indentation used [possible values: 'tabs', 'smart', '<num>'(spaces)].
+                        - tabs: used by default.
+                        - smart: based on the initial indentations in a file.
+                        - <num>: number of spaces.
+  -L  --line-length     Sets the max character line length. Default is 100.
+  -h  --help            Prints this help information.
+  -v  --version         Prints version information.
+
+Environment Variables:
+  NIM_DIFF_CMD          Sets a custom diff command that is used with the '-diff' option
+                        E.g.: 'NIM_DIFFCMD="diff --color=always -U 2"'
 ```
-
-The downside is that adding source filters blocks the use of `nimpretty`.<br>
-`nimpretty_t` allows to use the tab filter while preserving the ability to format files.
-
-For files without source filters, `nimpretty_t` will directly forward the prettifying request to `nimpretty`.
-
-_Note: Since source code filters usually block formatting for good reasons, other filters than the tab filter will still block nimpretty_t._
 
 ## Getting Started
 
-**Requirements**<br>
-`nimpretty` - comes with nim-lang. After all, it's still what's utilized under the hood for code formatting.
-
 ### Installation
 
-- Use nims default package manager nimble.
+- Via nimble
 
   ```sh
   nimble install nimpretty_t
   ```
 
-- Grab a binary from the [releases page][10]
+- Pre-built binaries can be downloaded from the [release page](https://github.com/ttytm/nimpretty_t/releases).
 
-- Or build from source (Linux example)
+  - [GNU/Linux](https://github.com/ttytm/nimpretty_t/releases/latest/download/nimpretty_t-linux-amd64)
+  - [Windows](https://github.com/ttytm/nimpretty_t/releases/latest/download/nimpretty_t-windows-amd64.exe)
+  - [macOS (arm64)](https://github.com/ttytm/nimpretty_t/releases/latest/download/nimpretty_t-macos-arm64)
+  - [macOS (amd64)](https://github.com/ttytm/nimpretty_t/releases/latest/download/nimpretty_t-macos-amd64)
 
-  ```sh
-  git clone git@github.com:tobealive/nimpretty_t.git
-  cd nimpretty_t
-  nim c -d:release src/nimpretty_t.nim
-  ln -s src/nimpretty_t ~/.local/bin/
-  ```
+### Editor Setup
 
-### Usage
+- #### Neovim
 
-```sh
-nimpretty_t [FILEPATH] [OPTIONS] [see nimpretty -h for valid options]
-```
-
-#### Format on Save
-
-- **Neovim**
-
-  Register `nimpretty_t` as `null-ls.nvim` source.
+  Register `nimpretty_t` in `null-ls`/`none-ls`
 
   ```lua
   local null_ls = require("null-ls")
-
   -- ...
-
   null_ls.register({
   	name = "nimpretty_t",
   	method = null_ls.methods.FORMATTING,
   	filetypes = { "nim" },
   	generator = null_ls.formatter({
   		command = "nimpretty_t",
-  		args = { "$FILENAME" },
-  		-- args = { "$FILENAME", "--maxLineLen=100" },  -- E.g., add options
+  		args = { "-w", "$FILENAME" },
   		to_temp_file = true,
   	}),
   })
   ```
 
-  A complementary tool regarding indentation for neovim is [tabs-vs-spaces.nvim][20]
+  A complementary tool regarding indentation for neovim is [tabs-vs-spaces.nvim](https://github.com/tenxsoydev/tabs-vs-spaces.nvim)
 
-- **VSCode / VSCodium**
+- #### VS Code / Codium
 
-  Requires the `Run on Save` Extension by emraldwalk.
+  Since nimpretty_t is a niche project in the Nim community, it is not yet clear whether it will have a user base that can benefit from its own VS Code extension.
+  To save efforts the extension has not yet been completed. Until then, please use the `Run on Save` extension from emeraldwalk.
 
   ```jsonc
   // settings.json
@@ -91,20 +96,8 @@ nimpretty_t [FILEPATH] [OPTIONS] [see nimpretty -h for valid options]
   			"match": "\\.nim$",
   			"isAsync": true,
   			"cmd": "nimpretty_t ${file}"
-  			// "cmd": "nimpretty_t ${file} --maxLineLen=100" // E.g., add options
+  			// "cmd": "nimpretty_t -w ${file}"
   		}
   	]
   }
   ```
-
-## Disclaimer
-
-It's early software. Things like mixing indentation styles might result in unexpected behavior during formatting. Feel free to reach out if you experience any issues and share a ★ if you don't consider it robbery.
-
-## Credits
-
-[nim-lang/Nim][30]
-
-[10]: https://github.com/tobealive/nimpretty_t/releases
-[20]: https://github.com/tenxsoydev/tabs-vs-spaces.nvim
-[30]: https://github.com/nim-lang/Nim

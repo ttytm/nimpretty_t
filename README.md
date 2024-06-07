@@ -6,7 +6,7 @@
 [![][badge__build]](https://github.com/ttytm/nimpretty_t/actions?query=branch%3Amain)
 [![][badge__version]](https://github.com/ttytm/nimpretty_t/releases/latest)
 
-Enables usage of `nimpretty` on paths with tab indentation and allows to view formatting diffs.
+Enables `nimpretty` formatting for projects that use tabs and allows viewing formatting diffs.
 
 ## Quick start
 

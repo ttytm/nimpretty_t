@@ -36,7 +36,7 @@ Environment Variables:
 	tabsFilter = &"#? replace(sub = \"\\t\", by = \"  \")\n"
 	multiLineStringToken = "\"\"\""
 	multiLineStringStartToken = [&"={multiLineStringToken}", &"discard{multiLineStringToken}"]
-	debug = true # For now, just a manual debug switch.
+	debug = false # For now, just a manual debug switch.
 
 
 let

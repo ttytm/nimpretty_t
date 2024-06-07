@@ -181,13 +181,12 @@ proc tabsToSpaces(linesToFormat: seq[string]): string =
 			indentLvl += 1
 
 		if indentLvl > 0:
-			var line = l
-			line.removePrefix(' ')
-			if l.len - line.len != indentLvl * spaceNum:
+			let unindentedLine = l.strip(trailing = false)
+			if (l.len - indentLvl * spaceNum) != unindentedLine.len:
 				# Case: invalid indentation. Preserve compiler error.
 				spaceIndentedLines.add(l)
 			else:
-				spaceIndentedLines.add(spaceIndent.repeat(indentLvl) & line)
+				spaceIndentedLines.add(spaceIndent.repeat(indentLvl) & unindentedLine)
 		else:
 			spaceIndentedLines.add(l)
 

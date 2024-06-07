@@ -312,7 +312,7 @@ proc init(): App =
 		else:
 			var diffBin = "diff"
 			when defined windows:
-				diffBin += ".exe"
+				diffBin &= ".exe"
 
 			result.diffCmd = diffBin & " -d -a -U 2 --color=always"
 

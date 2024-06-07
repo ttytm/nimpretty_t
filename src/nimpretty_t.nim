@@ -214,7 +214,14 @@ proc spacesToTabs(nimprettyFormattedPath: string): string =
 			indentLvl += 1
 
 		if indentLvl > 0:
-			formattedLines.add("\t".repeat(indentLvl) & l[indentLvl * spaceNum..^1])
+			var line = l
+			line.removePrefix(' ')
+			if l.len - line.len != indentLvl * spaceNum:
+				# Case: invalid indentation. Preserve compiler error.
+				# TODO: don't add top line in this case
+				formattedLines.add(l)
+			else:
+				formattedLines.add("\t".repeat(indentLvl) & line)
 		else:
 			formattedLines.add(l)
 
@@ -252,7 +259,7 @@ proc handleFile(app: var App, path: string) =
 	let nimpretty_cmd = &"nimpretty --maxLineLen={app.cli.lineLength} --indent={spaceNum} {tmpPath}"
 	when debug: dbg("nimpretty_cmd", nimpretty_cmd)
 	if execCmd(nimpretty_cmd) != 0:
-		echo &"[Error] failed to format file {tmpPath}"
+		quit(&"[Error] failed to format file {path}")
 
 	let useTabs = case app.cli.indentation
 		of tabs:

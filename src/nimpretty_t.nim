@@ -114,7 +114,7 @@ proc parseArgs(): CLI =
 				let rawLineLength = paramStr(i)
 				var res: uint
 				let lineLength = parseUInt(rawLineLength, res, 0)
-				if lineLength == 0: (&"[Error] invalid line-length: '{rawLineLength}'").quit()
+				if lineLength == 0: quit(&"[Error] invalid line-length: '{rawLineLength}'")
 				result.lineLength = uint16(lineLength)
 			of "-i", "--indentation":
 				inc(i)
@@ -129,7 +129,7 @@ proc parseArgs(): CLI =
 						if parseUInt(rawIndentation, res, 0) == 0:
 							(&"[Error] invalid indentation: '{rawIndentation}'").quit()
 						let indentWidth = parseInt(rawIndentation)
-						if indentWidth <= 0: (&"[Error] invalid indentation: '{rawIndentation}'").quit()
+						if indentWidth <= 0: quit(&"[Error] invalid indentation: '{rawIndentation}'")
 						result.indentation = spaces
 						spaceNum = indentWidth
 		inc(i)

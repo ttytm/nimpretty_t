@@ -127,7 +127,7 @@ proc parseArgs(): CLI =
 					else:
 						var res: uint
 						if parseUInt(rawIndentation, res, 0) == 0:
-							(&"[Error] invalid indentation: '{rawIndentation}'").quit()
+							quit(&"[Error] invalid indentation: '{rawIndentation}'")
 						let indentWidth = parseInt(rawIndentation)
 						if indentWidth <= 0: quit(&"[Error] invalid indentation: '{rawIndentation}'")
 						result.indentation = spaces
@@ -137,14 +137,14 @@ proc parseArgs(): CLI =
 	when debug: dbg("pathIdx", &"{pathIdx}")
 
 	if pathIdx == 0 and argsN > 1:
-		"[Error] no input file".quit(QuitFailure)
+		quit("[Error] no input file")
 
 	# Handle paths.
 	var hasInvalidPath = false
 	for i in pathIdx..argsN:
 		let arg = paramStr(i)
 		if arg.startsWith("-"):
-			(&"[Error] invalid option: {arg}").quit(QuitFailure)
+			quit(&"[Error] invalid option: '{arg}'")
 		elif (not dirExists(arg) and not fileExists(arg)) or (fileExists(arg) and
 				not isNimFile(arg)):
 			echo &"[Error] invalid path: '{arg}'"
@@ -159,6 +159,7 @@ proc parseArgs(): CLI =
 proc tabsToSpaces(linesToFormat: seq[string]): string =
 	# Converts tabs to spaces so that nimpretty won't refuse to do its magic.
 	var spaceIndentedLines: seq[string]
+	# TODO: handle multiline-comments as well
 	var isMultilineString = false
 	for line in linesToFormat:
 		# Handle multiline strings - preserve tabs.
@@ -180,10 +181,13 @@ proc tabsToSpaces(linesToFormat: seq[string]): string =
 			indentLvl += 1
 
 		if indentLvl > 0:
-			# Handle potential spaces after tabs.
-			var formattedLine = spaceIndent & l[indentLvl..^1]
-			formattedLine.removePrefix(' ')
-			spaceIndentedLines.add(spaceIndent.repeat(indentLvl) & formattedLine)
+			var line = l
+			line.removePrefix(' ')
+			if l.len - line.len != indentLvl * spaceNum:
+				# Case: invalid indentation. Preserve compiler error.
+				spaceIndentedLines.add(l)
+			else:
+				spaceIndentedLines.add(spaceIndent.repeat(indentLvl) & line)
 		else:
 			spaceIndentedLines.add(l)
 
@@ -214,14 +218,7 @@ proc spacesToTabs(nimprettyFormattedPath: string): string =
 			indentLvl += 1
 
 		if indentLvl > 0:
-			var line = l
-			line.removePrefix(' ')
-			if l.len - line.len != indentLvl * spaceNum:
-				# Case: invalid indentation. Preserve compiler error.
-				# TODO: don't add top line in this case
-				formattedLines.add(l)
-			else:
-				formattedLines.add("\t".repeat(indentLvl) & line)
+			formattedLines.add("\t".repeat(indentLvl) & l[indentLvl * spaceNum..^1])
 		else:
 			formattedLines.add(l)
 
@@ -256,10 +253,10 @@ proc handleFile(app: var App, path: string) =
 	writeFile(tmpPath, inputToFormat)
 	defer: removeFile (tmpPath)
 
-	let nimpretty_cmd = &"nimpretty --maxLineLen={app.cli.lineLength} --indent={spaceNum} {tmpPath}"
-	when debug: dbg("nimpretty_cmd", nimpretty_cmd)
-	if execCmd(nimpretty_cmd) != 0:
-		quit(&"[Error] failed to format file {path}")
+	let nimprettyCmd = &"nimpretty --maxLineLen={app.cli.lineLength} --indent={spaceNum} {tmpPath}"
+	when debug: dbg("nimprettyCmd", nimprettyCmd)
+	if execCmd(nimprettyCmd) != 0:
+		quit(&"[Error] failed to format file '{path}'")
 
 	let useTabs = case app.cli.indentation
 		of tabs:
@@ -291,7 +288,7 @@ proc handleFile(app: var App, path: string) =
 		writeFile(tmpPath, res)
 		let diffRes = execCmd(&"{app.diffCmd} {path} {tmpPath}")
 		if diffRes != 0 and diffRes != 1:
-			echo &"[Error] failed to diff {path}"
+			echo &"[Error] failed to diff '{path}'"
 		if app.cli.write:
 			# Case: combining `diff` and `write`. E.g., `nimpretty_t -d -w <path>`
 			moveFile(tmpPath, path)

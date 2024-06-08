@@ -1,5 +1,11 @@
 nimcache/
 nimblecache/
 htmldocs/
+testresults/
+
+# All sub-level build binaries
+*/**/*
+!*/**/*/
+!*/**/*.*
 
 nimpretty_t

@@ -1,0 +1,16 @@
+#? replace(sub = "\t", by = "  ")
+
+# Basic test used with nimpretty_t 0.1.0.
+
+const
+	hello = "Hello"
+
+#                        ↓     ↓
+proc someProc(testInput:  string )=
+	let helloWorld = testInput & " World"
+	#      ↓",
+	if true :
+		if true:
+			echo helloWorld
+
+someProc(hello)

@@ -132,6 +132,7 @@ proc parseArgs(): CLI =
 						if indentWidth <= 0: quit(&"[Error] invalid indentation: '{rawIndentation}'")
 						result.indentation = spaces
 						spaceNum = indentWidth
+						spaceIndent = " ".repeat(spaceNum)
 		inc(i)
 
 	when debug: dbg("pathIdx", &"{pathIdx}")
@@ -184,6 +185,7 @@ proc tabsToSpaces(linesToFormat: seq[string]): string =
 			let unindentedLine = l.strip(trailing = false)
 			if (l.len - indentLvl * spaceNum) != unindentedLine.len:
 				# Case: invalid indentation. Preserve compiler error.
+				# TODO: tests/testdata/original_tabs.nim, should not fail because of using tab indentation.
 				spaceIndentedLines.add(l)
 			else:
 				spaceIndentedLines.add(spaceIndent.repeat(indentLvl) & unindentedLine)

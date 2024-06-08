@@ -182,13 +182,7 @@ proc tabsToSpaces(linesToFormat: seq[string]): string =
 			indentLvl += 1
 
 		if indentLvl > 0:
-			let unindentedLine = l.strip(trailing = false)
-			if (l.len - indentLvl * spaceNum) != unindentedLine.len:
-				# Case: invalid indentation. Preserve compiler error.
-				# TODO: tests/testdata/original_tabs.nim, should not fail because of using tab indentation.
-				spaceIndentedLines.add(l)
-			else:
-				spaceIndentedLines.add(spaceIndent.repeat(indentLvl) & unindentedLine)
+			spaceIndentedLines.add(spaceIndent.repeat(indentLvl) & l.strip(trailing = false))
 		else:
 			spaceIndentedLines.add(l)
 

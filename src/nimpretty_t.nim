@@ -160,13 +160,24 @@ proc parseArgs(): CLI =
 proc tabsToSpaces(linesToFormat: seq[string]): string =
 	# Converts tabs to spaces so that nimpretty won't refuse to do its magic.
 	var spaceIndentedLines: seq[string]
-	# TODO: handle multiline-comments as well
 	var isMultilineString = false
-	for line in linesToFormat:
-		# Handle multiline strings - preserve tabs.
-		var l = line
-		l.removeSuffix(' ')
-		# Handle multiline strings - preserve spaces.
+	var multilineCommentLvl = 0
+	for l in linesToFormat:
+		# TODO: remove after verifying obsoleteness, push test cases.
+		# var l = line
+		# l.removeSuffix(' ')
+		# Preserve indentation in multiline comments.
+		let mlCommentsInc = l.count("#[")
+		let mlCommentsDec = l.count("]#")
+		when debug: dbg("MLCOMMENT", &"LVL: {multiLineCommentLvl}, INC: {mlCommentsInc}, DEC: {mlCommentsDec}")
+		if multiLineCommentLvl > 0:
+			spaceIndentedLines.add(l)
+			multilineCommentLvl += mlCommentsInc - mlCommentsDec
+			continue
+
+		multilineCommentLvl += mlCommentsInc - mlCommentsDec
+
+		# Preserve indentation in multiline strings.
 		if isMultilineString:
 			spaceIndentedLines.add(l)
 			if l.endswith(multiLineStringToken):
@@ -196,8 +207,19 @@ proc spacesToTabs(nimprettyFormattedPath: string): string =
 
 	var formattedLines: seq[string]
 	var isMultilineString = false
+	var multilineCommentLvl = 0
 	for l in f.lines:
-		# Handle multiline strings - preserve spaces.
+		# Preserve indentation in multiline comments.
+		let mlCommentsInc = l.count("#[")
+		let mlCommentsDec = l.count("]#")
+		when debug: dbg("MLCOMMENT", &"LVL: {multiLineCommentLvl}, INC: {mlCommentsInc}, DEC: {mlCommentsDec}")
+		if multiLineCommentLvl > 0:
+			formattedLines.add(l)
+			multilineCommentLvl += mlCommentsInc - mlCommentsDec
+			continue
+		multilineCommentLvl += mlCommentsInc - mlCommentsDec
+
+		# Preserve indentation in multiline strings.
 		if isMultilineString:
 			formattedLines.add(l)
 			if l.endswith(multiLineStringToken):

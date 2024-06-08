@@ -95,8 +95,7 @@ Environment Variables:
   		{
   			"match": "\\.nim$",
   			"isAsync": true,
-  			"cmd": "nimpretty_t ${file}"
-  			// "cmd": "nimpretty_t -w ${file}"
+  			"cmd": "nimpretty_t -w ${file}"
   		}
   	]
   }

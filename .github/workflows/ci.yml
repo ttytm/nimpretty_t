@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  push:
+    paths-ignore: ['**.md']
+  pull_request:
+    paths-ignore: ['**.md']
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name == 'main' && github.sha || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact: nimpretty_t-linux-amd64
+          - os: windows-latest
+            artifact: nimpretty_t-windows-amd64.exe
+          - os: macos-latest
+            artifact: nimpretty_t-macos-amd64
+          - os: macos-latest
+            artifact: nimpretty_t-macos-arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup nim
+        uses: iffy/install-nim@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build
+        run: nimble build --verbose
+      - name: Prepare artifacts
+        run: mv nimpretty_t ${{ matrix.artifact }}
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.artifact }}
+      - name: Generate release name from tag '${{ github.ref_name }}'
+        if: github.ref_type == 'tag'
+        shell: bash
+        run: |
+          # The used convention for tags is `v<major.minor.patch>`
+          # For the release name it is `nimpretty_t <major.minor.patch>`.
+          release_name="nimpretty_t ${GITHUB_REF_NAME:1}" # `v0.2.1` -> `nimpretty_t 0.2.1`
+          echo "RELEASE_NAME=$release_name" >> $GITHUB_ENV
+      - name: Release artifacts
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ matrix.artifact }}
+          name: ${{ env.RELEASE_NAME }}

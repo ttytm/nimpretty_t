@@ -1,6 +1,6 @@
 #? replace(sub = "\t", by = "  ")
 
-# Basic test used with nimpretty_t 0.1.0.
+# Basic test that was used with nimpretty_t 0.1.0.
 
 const
 	hello = "Hello"

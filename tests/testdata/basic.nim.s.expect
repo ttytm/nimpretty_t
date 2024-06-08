@@ -1,16 +1,15 @@
-#? replace(sub = "\t", by = "  ")
 
 # Basic test that was used with nimpretty_t 0.1.0.
 
 const
-	hello = "Hello"
+    hello = "Hello"
 
 #                        ↓     ↓
 proc someProc(testInput: string) =
-	let helloWorld = testInput & " World"
-	#      ↓",
-	if true:
-		if true:
-			echo helloWorld
+    let helloWorld = testInput & " World"
+    #      ↓",
+    if true:
+        if true:
+            echo helloWorld
 
 someProc(hello)

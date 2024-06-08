@@ -1,3 +1,4 @@
+#? replace(sub = "\t", by = "  ")
 discard """
   discard that works as a multiline comment.
 	Or for unparsable, broken code
@@ -19,5 +20,5 @@ discard """
 ]#
 
 proc main() =
-    let hello = "hello"
-    echo hello
+	let hello = "hello"
+	echo hello

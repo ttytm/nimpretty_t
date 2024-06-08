@@ -67,12 +67,18 @@ type
 
 
 when debug:
-	proc dbg(ident: string, value: string) =
+	proc dbgHeader(fnName: string) =
+		let divider = "-".repeat(60 - fnName.len)
+		echo &"[DEBUG] -- {fnName} {divider}"
+
+	proc dbg(ident: string, value: string, fnName: string = "") =
+		if fnName != "": dbgHeader(fnName)
 		echo &"[DEBUG] {ident}: '{value}'"
 
 
+
 proc isNimFile(path: string): bool =
-	when debug: dbg("isNimFile", path)
+	when debug: dbg("path", path, "isNimFile")
 
 	if not path.contains('.'):
 		return false
@@ -82,6 +88,8 @@ proc isNimFile(path: string): bool =
 
 
 proc parseArgs(): CLI =
+	when debug: dbgHeader("parseArgs")
+
 	# Using `result` directly will not use default values?
 	result = CLI()
 
@@ -158,10 +166,13 @@ proc parseArgs(): CLI =
 
 
 proc tabsToSpaces(linesToFormat: seq[string]): string =
+	when debug: dbgHeader("tabsToSpaces")
+
 	# Converts tabs to spaces so that nimpretty won't refuse to do its magic.
 	var spaceIndentedLines: seq[string]
 	var isMultilineString = false
 	var multilineCommentLvl = 0
+
 	for l in linesToFormat:
 		# TODO: remove after verifying obsoleteness, push test cases.
 		# var l = line
@@ -171,6 +182,7 @@ proc tabsToSpaces(linesToFormat: seq[string]): string =
 		let mlCommentsDec = l.count("]#")
 		when debug: dbg("MLCOMMENT", &"LVL: {multiLineCommentLvl}, INC: {mlCommentsInc}, DEC: {mlCommentsDec}")
 		if multiLineCommentLvl > 0:
+			when debug: dbg("", &"{l}")
 			spaceIndentedLines.add(l)
 			multilineCommentLvl += mlCommentsInc - mlCommentsDec
 			continue
@@ -201,6 +213,8 @@ proc tabsToSpaces(linesToFormat: seq[string]): string =
 
 
 proc spacesToTabs(nimprettyFormattedPath: string): string =
+	when debug: dbgHeader("spacesToTabs")
+
 	# Refines a nimpretty formatted file.
 	let f = open(nimprettyFormattedPath)
 	defer: f.close()
@@ -208,12 +222,14 @@ proc spacesToTabs(nimprettyFormattedPath: string): string =
 	var formattedLines: seq[string]
 	var isMultilineString = false
 	var multilineCommentLvl = 0
+
 	for l in f.lines:
 		# Preserve indentation in multiline comments.
 		let mlCommentsInc = l.count("#[")
 		let mlCommentsDec = l.count("]#")
 		when debug: dbg("MLCOMMENT", &"LVL: {multiLineCommentLvl}, INC: {mlCommentsInc}, DEC: {mlCommentsDec}")
 		if multiLineCommentLvl > 0:
+			when debug: dbg("", &"{l}")
 			formattedLines.add(l)
 			multilineCommentLvl += mlCommentsInc - mlCommentsDec
 			continue
@@ -256,7 +272,7 @@ proc hasTabsIndent(inputLines: seq[string]): bool =
 
 
 proc handleFile(app: var App, path: string) =
-	when debug: dbg("handleFile", path)
+	when debug: dbg("path", path, "handleFile")
 
 	let input = readFile(path)
 	let inputLines = input.split('\n')
@@ -295,6 +311,7 @@ proc handleFile(app: var App, path: string) =
 		return
 
 	app.hasDiff = true
+
 	if app.cli.list:
 		echo path
 	if app.cli.write and not app.cli.diff:
@@ -307,12 +324,13 @@ proc handleFile(app: var App, path: string) =
 		if diffRes != 0 and diffRes != 1:
 			echo &"[Error] failed to diff '{path}'"
 		if app.cli.write:
-			# Case: combining `diff` and `write`. E.g., `nimpretty_t -d -w <path>`
+			# Case: `diff` and `write` were passed together.
 			moveFile(tmpPath, path)
 
 
 proc handlePath(app: var App, path: string) =
-	when debug: dbg("handlePath", path)
+	when debug: dbg("path", path, "handlePath")
+
 	if dirExists(path):
 		for v in walkDir(path):
 			app.handlePath(v.path.replace("\\", "/"))
@@ -340,7 +358,8 @@ proc init(): App =
 
 proc main() =
 	var app = init()
-	when debug: dbg("main", $app)
+
+	when debug: dbg("app", $app, "main")
 
 	for p in app.cli.paths:
 		app.handlePath(p)

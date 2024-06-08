@@ -33,9 +33,11 @@ Environment Variables:
                         E.g.: 'NIM_DIFFCMD="diff --color=always -U 2"'"""
 
 # Relevant for internals.
-	tabsFilter = &"#? replace(sub = \"\\t\", by = \"  \")\n"
+	tabsFilter = &"#? replace(sub = \"\\t\", by = \"  \")"
+	# For consistent comparison without spaces.
+	tabsFilterIndicator= tabsFilter.replace(" ", "")
 	multiLineStringToken = "\"\"\""
-	multiLineStringStartToken = [&"={multiLineStringToken}", &"discard{multiLineStringToken}"]
+	multiLineStringStartIndicator = [&"={multiLineStringToken}", &"discard{multiLineStringToken}"]
 	debug = false # For now, just a manual debug switch.
 
 
@@ -166,17 +168,17 @@ proc parseArgs(): CLI =
 
 
 proc tabsToSpaces(linesToFormat: seq[string]): string =
+	# Converts tabs to spaces so that nimpretty won't refuse to do its magic.
 	when debug: dbgHeader("tabsToSpaces")
 
-	# Converts tabs to spaces so that nimpretty won't refuse to do its magic.
-	var spaceIndentedLines: seq[string]
+	# NOTE: `nimpretty` classic won't format first line comments, a space above
+	# will make it behave. Ref.: `tests/testdata/first_line_comment.nim`
+	var spaceIndentedLines = @[""]
 	var isMultilineString = false
 	var multilineCommentLvl = 0
 
+	when debug: dbg("linesToFormat", &"{linesToFormat}")
 	for l in linesToFormat:
-		# TODO: remove after verifying obsoleteness, push test cases.
-		# var l = line
-		# l.removeSuffix(' ')
 		# Preserve indentation in multiline comments.
 		let mlCommentsInc = l.count("#[")
 		let mlCommentsDec = l.count("]#")
@@ -197,7 +199,7 @@ proc tabsToSpaces(linesToFormat: seq[string]): string =
 			continue
 		else:
 			let lNoSpaces = l.replace(" ", "")
-			for t in multiLineStringStartToken:
+			for t in multiLineStringStartIndicator:
 				if lNoSpaces.contains(t): isMultilineString = true
 
 		var indentLvl = 0
@@ -209,7 +211,11 @@ proc tabsToSpaces(linesToFormat: seq[string]): string =
 		else:
 			spaceIndentedLines.add(l)
 
-	return spaceIndentedLines.join("\n") & "\n"
+	# In contrary to nimpretty classic, remove trailing linebreaks.
+	var res = spaceIndentedLines.join("\n")
+	res.removeSuffix('\n')
+	# Make sure the last line ends with `\n` - prevent "\ No newline at end of file" diffs.
+	return res & "\n"
 
 
 proc spacesToTabs(nimprettyFormattedPath: string): string =
@@ -243,7 +249,7 @@ proc spacesToTabs(nimprettyFormattedPath: string): string =
 			continue
 		else:
 			let lNoSpaces = l.replace(" ", "")
-			for t in multiLineStringStartToken:
+			for t in multiLineStringStartIndicator:
 				if lNoSpaces.contains(t): isMultilineString = true
 
 		var indentLvl = 0
@@ -255,11 +261,7 @@ proc spacesToTabs(nimprettyFormattedPath: string): string =
 		else:
 			formattedLines.add(l)
 
-	var res = formattedLines.join("\n")
-	# In contrary to nimpretty classic, remove trailing linbreaks.
-	# TEST: add test case to prevent regression.
-	res.removeSuffix('\n')
-	return res & "\n"
+	return formattedLines.join("\n") & "\n"
 
 
 proc hasTabsIndent(inputLines: seq[string]): bool =
@@ -275,11 +277,11 @@ proc handleFile(app: var App, path: string) =
 	when debug: dbg("path", path, "handleFile")
 
 	let input = readFile(path)
-	let inputLines = input.split('\n')
+	let inputLines = input.splitLines()
 	if inputLines.len <= 1:
 		return
 
-	let hasTabsFilter = inputLines[0].contains("#? replace(sub = \"\\t\", by = \" ")
+	let hasTabsFilter = inputLines[0].replace(" ", "").contains(tabsFilterIndicator)
 	let inputToFormat = if hasTabsFilter: tabsToSpaces(inputLines[1..^1]) else: tabsToSpaces(inputLines)
 
 	let tmpPath = tmpDir / extractFilename(path)
@@ -302,7 +304,8 @@ proc handleFile(app: var App, path: string) =
 		of spaces:
 			false
 
-	let res = if useTabs: tabsFilter & spacesToTabs(tmpPath) else: readFile(tmpPath)
+	# Remove initial line break that was in `tabsToSpaces` to make nimpretty behave.
+	let res = if useTabs: tabsFilter & spacesToTabs(tmpPath) else: readFile(tmpPath).substr(1)
 
 	if not app.cli.write and not app.cli.diff and not app.cli.list:
 		echo res

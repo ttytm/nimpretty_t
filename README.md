@@ -1,6 +1,6 @@
 # nimpretty_t
 
-[badge__build]: https://img.shields.io/github/actions/workflow/status/ttytm/nimpretty_t/build.yml?branch=main&logo=github&logoColor=C0CAF5&labelColor=333
+[badge__build]: https://img.shields.io/github/actions/workflow/status/ttytm/nimpretty_t/ci.yml?branch=main&logo=github&logoColor=C0CAF5&labelColor=333
 [badge__version]: https://img.shields.io/github/v/release/ttytm/nimpretty_t?logo=task&logoColor=C0CAF5&labelColor=333&color=ffc200
 
 [![][badge__build]](https://github.com/ttytm/nimpretty_t/actions?query=branch%3Amain)

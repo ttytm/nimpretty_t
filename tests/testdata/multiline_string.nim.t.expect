@@ -14,7 +14,7 @@ proc main() =
 	discard """
     discard that works as a multiline comment.
   	Or for unparsable, broken code
-
+  
        Same as with classic `nimpretty`, indentation inside should not change.
   		   ...
   """

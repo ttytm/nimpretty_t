@@ -4,7 +4,7 @@
 proc main( )  =  
   ## Docstring: FizzBuzz.
   for n  in 1..100:
-    if n mod 3 ==   0 and n mod 5== 0:  
+    if n mod 3 ==   0 and n mod 5   == 0:  
       echo "FizzBuzz"
     elif n   mod 3 == 0:
       echo "Fizz"

@@ -6,7 +6,7 @@
 [![][badge__build]](https://github.com/ttytm/nimpretty_t/actions?query=branch%3Amain)
 [![][badge__version]](https://github.com/ttytm/nimpretty_t/releases/latest)
 
-Enables `nimpretty` formatting for projects that use tabs and allows viewing formatting diffs.
+Uses `nimpretty` to format Nim code while allowing for tab indentation and diff viewing.
 
 ## Quick start
 

@@ -1,5 +1,4 @@
 #? replace(sub = "\t", by = "  ")
-
 # nimpretty_t - formatter and diff viewer utilizing nimpretty.
 # Source: https://github.com/ttytm/nimpretty_t
 # License: MIT
@@ -69,18 +68,15 @@ type
 
 
 when debug:
-	proc dbgHeader(fnName: string) =
-		let divider = "-".repeat(60 - fnName.len)
-		echo &"[DEBUG] -- {fnName} {divider}"
-
-	proc dbg(ident: string, value: string, fnName: string = "") =
-		if fnName != "": dbgHeader(fnName)
-		echo &"[DEBUG] {ident}: '{value}'"
-
+	proc dbg(ident: string, value: string = "") =
+		if value != "":
+			echo &"[DEBUG] {ident}: '{value}'"
+		else:
+			echo &"[DEBUG] {ident} ---"
 
 
 proc isNimFile(path: string): bool =
-	when debug: dbg("path", path, "isNimFile")
+	when debug: dbg(">>> isNimFile: path", path)
 
 	if not path.contains('.'):
 		return false
@@ -90,7 +86,7 @@ proc isNimFile(path: string): bool =
 
 
 proc parseArgs(): CLI =
-	when debug: dbgHeader("parseArgs")
+	when debug: dbg(">> parseArgs")
 
 	# Using `result` directly will not use default values?
 	result = CLI()
@@ -145,7 +141,7 @@ proc parseArgs(): CLI =
 						spaceIndent = " ".repeat(spaceNum)
 		inc(i)
 
-	when debug: dbg("pathIdx", &"{pathIdx}")
+	when debug: dbg(">> parseArgs: pathIdx", &"{pathIdx}")
 
 	if pathIdx == 0 and argsN > 1:
 		quit("[Error] no input file")
@@ -169,7 +165,7 @@ proc parseArgs(): CLI =
 
 proc tabsToSpaces(linesToFormat: seq[string]): string =
 	# Converts tabs to spaces so that nimpretty won't refuse to do its magic.
-	when debug: dbgHeader("tabsToSpaces")
+	when debug: dbg(">>>> tabsToSpaces")
 
 	# NOTE: `nimpretty` classic won't format first line comments, a space above
 	# will make it behave. Ref.: `tests/testdata/first_line_comment.nim`
@@ -177,14 +173,13 @@ proc tabsToSpaces(linesToFormat: seq[string]): string =
 	var isMultilineString = false
 	var multilineCommentLvl = 0
 
-	when debug: dbg("linesToFormat", &"{linesToFormat}")
 	for l in linesToFormat:
 		# Preserve indentation in multiline comments.
 		let mlCommentsInc = l.count("#[")
 		let mlCommentsDec = l.count("]#")
-		when debug: dbg("MLCOMMENT", &"LVL: {multiLineCommentLvl}, INC: {mlCommentsInc}, DEC: {mlCommentsDec}")
 		if multiLineCommentLvl > 0:
-			when debug: dbg("", &"{l}")
+			when debug: dbg(">>>> tabsToSpaces: MLCOMMENT", &"LVL: {multiLineCommentLvl}, INC: {mlCommentsInc}, DEC: {mlCommentsDec}")
+			when debug: dbg(">>>>", l)
 			spaceIndentedLines.add(l)
 			multilineCommentLvl += mlCommentsInc - mlCommentsDec
 			continue
@@ -219,7 +214,7 @@ proc tabsToSpaces(linesToFormat: seq[string]): string =
 
 
 proc spacesToTabs(nimprettyFormattedPath: string): string =
-	when debug: dbgHeader("spacesToTabs")
+	when debug: dbg(">>>> spacesToTabs")
 
 	# Refines a nimpretty formatted file.
 	let f = open(nimprettyFormattedPath)
@@ -233,9 +228,9 @@ proc spacesToTabs(nimprettyFormattedPath: string): string =
 		# Preserve indentation in multiline comments.
 		let mlCommentsInc = l.count("#[")
 		let mlCommentsDec = l.count("]#")
-		when debug: dbg("MLCOMMENT", &"LVL: {multiLineCommentLvl}, INC: {mlCommentsInc}, DEC: {mlCommentsDec}")
 		if multiLineCommentLvl > 0:
-			when debug: dbg("", &"{l}")
+			when debug: dbg(">>>> spacesToTabs: MLCOMMENT", &"LVL: {multiLineCommentLvl}, INC: {mlCommentsInc}, DEC: {mlCommentsDec}")
+			when debug: dbg(">>>>", l)
 			formattedLines.add(l)
 			multilineCommentLvl += mlCommentsInc - mlCommentsDec
 			continue
@@ -274,7 +269,7 @@ proc hasTabsIndent(inputLines: seq[string]): bool =
 
 
 proc handleFile(app: var App, path: string) =
-	when debug: dbg("path", path, "handleFile")
+	when debug: dbg(">>> handeFile: path", path)
 
 	let input = readFile(path)
 	let inputLines = input.splitLines()
@@ -289,7 +284,7 @@ proc handleFile(app: var App, path: string) =
 	defer: removeFile (tmpPath)
 
 	let nimprettyCmd = &"nimpretty --maxLineLen={app.cli.lineLength} --indent={spaceNum} {tmpPath}"
-	when debug: dbg("nimprettyCmd", nimprettyCmd)
+	when debug: dbg(">>> handleFile: nimprettyCmd", nimprettyCmd)
 	if execCmd(nimprettyCmd) != 0:
 		quit(&"[Error] failed to format file '{path}'")
 
@@ -332,7 +327,7 @@ proc handleFile(app: var App, path: string) =
 
 
 proc handlePath(app: var App, path: string) =
-	when debug: dbg("path", path, "handlePath")
+	when debug: dbg(">> handlePath: path", path)
 
 	if dirExists(path):
 		for v in walkDir(path):
@@ -361,8 +356,7 @@ proc init(): App =
 
 proc main() =
 	var app = init()
-
-	when debug: dbg("app", $app, "main")
+	when debug: dbg("> main: app", $app)
 
 	for p in app.cli.paths:
 		app.handlePath(p)

@@ -34,7 +34,7 @@ Environment Variables:
 # Relevant for internals.
 	tabsFilter = &"#? replace(sub = \"\\t\", by = \"  \")"
 	# For consistent comparison without spaces.
-	tabsFilterIndicator= tabsFilter.replace(" ", "")
+	tabsFilterIndicator = tabsFilter.replace(" ", "")
 	multiLineStringToken = "\"\"\""
 	multiLineStringStartIndicator = [&"={multiLineStringToken}", &"discard{multiLineStringToken}"]
 	debug = false # For now, just a manual debug switch.
@@ -174,28 +174,34 @@ proc tabsToSpaces(linesToFormat: seq[string]): string =
 	var multilineCommentLvl = 0
 
 	for l in linesToFormat:
-		# Preserve indentation in multiline comments.
-		let mlCommentsInc = l.count("#[")
-		let mlCommentsDec = l.count("]#")
-		if multiLineCommentLvl > 0:
-			when debug: dbg(">>>> tabsToSpaces: MLCOMMENT", &"LVL: {multiLineCommentLvl}, INC: {mlCommentsInc}, DEC: {mlCommentsDec}")
-			when debug: dbg(">>>>", l)
-			spaceIndentedLines.add(l)
-			multilineCommentLvl += mlCommentsInc - mlCommentsDec
-			continue
+		# Keep track of current multiline comment state since it can be nested
+		let isMultilineComment = multiLineCommentLvl > 0
 
-		multilineCommentLvl += mlCommentsInc - mlCommentsDec
+		if not isMultilineComment:
+			# Preserve indentation in multiline strings.
+			if isMultilineString:
+				spaceIndentedLines.add(l)
+				if l.endswith(multiLineStringToken):
+					isMultilineString = false
+				continue
+			else:
+				let lNoSpaces = l.replace(" ", "")
+				for t in multiLineStringStartIndicator:
+					if lNoSpaces.contains(t): isMultilineString = true
 
-		# Preserve indentation in multiline strings.
-		if isMultilineString:
-			spaceIndentedLines.add(l)
-			if l.endswith(multiLineStringToken):
-				isMultilineString = false
-			continue
-		else:
-			let lNoSpaces = l.replace(" ", "")
-			for t in multiLineStringStartIndicator:
-				if lNoSpaces.contains(t): isMultilineString = true
+		if not isMultilineString:
+			if isMultilineComment or l.count("\"") mod 2 == 0:
+				# Preserve indentation in multiline comments.
+				let mlCommentsInc = l.count("#[")
+				let mlCommentsDec = l.count("]#")
+				multilineCommentLvl += mlCommentsInc - mlCommentsDec
+				if isMultilineComment:
+					# Add line and continue loop if it already was a multiline comment.
+					spaceIndentedLines.add(l)
+					when debug: dbg(">>>> tabsToSpaces: MLCOMMENT",
+							&"LVL: {multiLineCommentLvl}, INC: {mlCommentsInc}, DEC: {mlCommentsDec}")
+					when debug: dbg(">>>>", l)
+					continue
 
 		var indentLvl = 0
 		while l[indentLvl..^1].startsWith("\t"):
@@ -225,27 +231,34 @@ proc spacesToTabs(nimprettyFormattedPath: string): string =
 	var multilineCommentLvl = 0
 
 	for l in f.lines:
-		# Preserve indentation in multiline comments.
-		let mlCommentsInc = l.count("#[")
-		let mlCommentsDec = l.count("]#")
-		if multiLineCommentLvl > 0:
-			when debug: dbg(">>>> spacesToTabs: MLCOMMENT", &"LVL: {multiLineCommentLvl}, INC: {mlCommentsInc}, DEC: {mlCommentsDec}")
-			when debug: dbg(">>>>", l)
-			formattedLines.add(l)
-			multilineCommentLvl += mlCommentsInc - mlCommentsDec
-			continue
-		multilineCommentLvl += mlCommentsInc - mlCommentsDec
+		# Keep track of current multiline comment state since it can be nested
+		let isMultilineComment = multiLineCommentLvl > 0
 
-		# Preserve indentation in multiline strings.
-		if isMultilineString:
-			formattedLines.add(l)
-			if l.endswith(multiLineStringToken):
-				isMultilineString = false
-			continue
-		else:
-			let lNoSpaces = l.replace(" ", "")
-			for t in multiLineStringStartIndicator:
-				if lNoSpaces.contains(t): isMultilineString = true
+		if not isMultilineComment:
+			# Preserve indentation in multiline strings.
+			if isMultilineString:
+				formattedLines.add(l)
+				if l.endswith(multiLineStringToken):
+					isMultilineString = false
+				continue
+			else:
+				let lNoSpaces = l.replace(" ", "")
+				for t in multiLineStringStartIndicator:
+					if lNoSpaces.contains(t): isMultilineString = true
+
+		if not isMultilineString:
+			# Preserve indentation in multiline comments.
+			if isMultilineComment or l.count("\"") mod 2 == 0:
+				let mlCommentsInc = l.count("#[")
+				let mlCommentsDec = l.count("]#")
+				multilineCommentLvl += mlCommentsInc - mlCommentsDec
+				if isMultilineComment:
+					# Add line and continue loop if it already was a multiline comment.
+					formattedLines.add(l)
+					when debug: dbg(">>>> tabsToSpaces: MLCOMMENT",
+							&"LVL: {multiLineCommentLvl}, INC: {mlCommentsInc}, DEC: {mlCommentsDec}")
+					when debug: dbg(">>>>", l)
+					continue
 
 		var indentLvl = 0
 		while l[indentLvl * spaceNum..^1].startsWith(" "):

@@ -374,8 +374,8 @@ proc main() =
 	for p in app.cli.paths:
 		app.handlePath(p)
 
-	if app.hasDiff:
-		quit()
+	if app.hasDiff and (app.cli.list or app.cli.diff):
+		quit(QuitFailure)
 
 
 main()

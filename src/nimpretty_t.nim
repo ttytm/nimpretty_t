@@ -76,13 +76,9 @@ when debug:
 
 
 proc isNimFile(path: string): bool =
-	when debug: dbg(">>> isNimFile: path", path)
-
-	if not path.contains('.'):
-		return false
-
-	let ext = path.rsplit('.', maxsplit = 1)[1]
-	return if ext.len < 3: false else: ext[0..2] == "nim"
+	let file = splitFile(path)
+	when debug: dbg(">>> isNimFile: file", &"{file}")
+	return if file.ext.len < 4: false else: file.ext[1..3] == "nim"
 
 
 proc parseArgs(): CLI =

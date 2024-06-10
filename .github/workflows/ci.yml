@@ -28,15 +28,16 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Nim
-        uses: jiro4989/setup-nim-action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Get Nim version
         id: nim-version
         shell: bash
         run: |
-          nim_version=$(nim --version | head -n 1)
+          nim_version=$(curl -L \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/nim-lang/nim/tags" \
+            | jq -r '.[0].name')
           echo $nim_version
           echo "NIM_VERSION=$nim_version" >> $GITHUB_ENV
       - name: Cache choosenim
@@ -53,6 +54,10 @@ jobs:
           path: ~/.nimble
           key: ${{ matrix.os }}-nimble-${{ hashFiles('*.nimble') }}
           restore-keys: ${{ matrix.os }}-nimble-
+      - name: Setup Nim
+        uses: jiro4989/setup-nim-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Build
         run: nimble build --verbose
       - name: Prepare artifacts

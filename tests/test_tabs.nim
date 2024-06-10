@@ -1,5 +1,5 @@
 #? replace(sub = "\t", by = "  ")
-import std/[os, osproc, strformat, strutils, macros]
+import std/[os, osproc, strformat, strutils, macros, sequtils]
 
 const testPath = macros.getProjectPath()
 const tmpTestPath = os.getTempDir() / "nimpretty_t" / "tests" / "tabs"
@@ -16,10 +16,10 @@ assert execCmd(buildCmd) == 0
 assert execCmd(&"{testExe} --version") == 0
 
 
-# Keep track of run tests to ensure this loop always finds test files in case paths change.
-var testNum = 0
-for p in walkPattern(tmpTestPath & "/*.nim"):
-	inc(testNum)
+let paths = toSeq(walkPattern(tmpTestPath & "/*.nim"))
+assert paths.len > 5
+
+for _, p in paths:
 	if p.endswith("_err.nim"):
 		continue
 	assert execCmd(&"{testExe} -w {p}") == 0
@@ -29,7 +29,6 @@ for p in walkPattern(tmpTestPath & "/*.nim"):
 	if res != expected:
 		let (diff, _) = execCmdEx(&"diff -d -a -U 2 --color=always {p} {expectPath}")
 		assert false, diff
-assert testNum > 3
 
 
 os.removeDir(tmpTestPath)

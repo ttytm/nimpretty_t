@@ -28,10 +28,31 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - name: Setup nim
-        uses: iffy/install-nim@v5
+      - name: Setup Nim
+        uses: jiro4989/setup-nim-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Get Nim version
+        id: nim-version
+        shell: bash
+        run: |
+          nim_version=$(nim --version | head -n 1)
+          echo $nim_version
+          echo "NIM_VERSION=$nim_version" >> $GITHUB_ENV
+      - name: Cache choosenim
+        id: cache-choosenim
+        uses: actions/cache@v4
+        with:
+          path: ~/.choosenim
+          key: ${{ matrix.os }}-choosenim-${{ env.NIM_VERSION }}
+          restore-keys: ${{ matrix.os }}-choosenim-
+      - name: Cache nimble
+        id: cache-nimble
+        uses: actions/cache@v4
+        with:
+          path: ~/.nimble
+          key: ${{ matrix.os }}-nimble-${{ hashFiles('*.nimble') }}
+          restore-keys: ${{ matrix.os }}-nimble-
       - name: Build
         run: nimble build --verbose
       - name: Prepare artifacts

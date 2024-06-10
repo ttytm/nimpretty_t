@@ -1,0 +1,6 @@
+#? replace(sub = "\t", by = "  ")
+proc main() =
+	echo("hello world")
+
+
+main()

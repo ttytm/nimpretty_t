@@ -1,4 +1,5 @@
 #? replace(sub = "\t", by = "  ")
+
 # nimpretty_t - formatter and diff viewer utilizing nimpretty.
 # Source: https://github.com/ttytm/nimpretty_t
 # License: MIT
@@ -331,7 +332,7 @@ proc handleFile(app: var App, path: string) =
 	if not app.cli.write and not app.cli.diff and not app.cli.list:
 		echo res
 
-	if resNoFilter == inputToFormat.join("\n"):
+	if res == input:
 		return
 
 	app.hasDiff = true

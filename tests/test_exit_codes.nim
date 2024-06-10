@@ -25,4 +25,5 @@ assert execCmd(&"{testExe} -w {testFile}") == 0
 assert execCmd(&"{testExe} -l {testFile}") == 0
 assert execCmd(&"{testExe} -d {testFile}") == 0
 
+
 os.removeDir(tmpTestPath)

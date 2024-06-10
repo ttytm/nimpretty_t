@@ -170,6 +170,10 @@ proc tabsToSpaces(linesToFormat: seq[string]): string =
 	var multilineCommentLvl = 0
 
 	for l in linesToFormat:
+		if l == "":
+			spaceIndentedLines.add(l)
+			continue
+
 		# Keep track of current multiline comment state since it can be nested
 		let isMultilineComment = multiLineCommentLvl > 0
 
@@ -227,6 +231,10 @@ proc spacesToTabs(nimprettyFormattedPath: string): string =
 	var multilineCommentLvl = 0
 
 	for l in f.lines:
+		if l == "":
+			formattedLines.add(l)
+			continue
+
 		# Keep track of current multiline comment state since it can be nested
 		let isMultilineComment = multiLineCommentLvl > 0
 

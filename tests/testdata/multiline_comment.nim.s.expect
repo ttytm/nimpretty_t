@@ -20,4 +20,11 @@ discard """
 
 proc main() =
     let hello = "hello"
+    # No multiline comments
+    let _ = "#["
+    let _ = "]#"
+    let _ = "foo#["
+    let _ = "bar]#"
+    # #[
     echo hello
+    # ]#

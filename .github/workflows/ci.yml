@@ -63,6 +63,8 @@ jobs:
         run: testament pattern 'tests/*.nim'
       - name: Build
         run: nimble build --verbose -d:release
+      - name: Format self
+        run: ./nimpretty_t -d src/nimpretty_t.nim
       - name: Prepare artifacts
         shell: bash
         run: mv nimpretty_t ${{ matrix.artifact }}

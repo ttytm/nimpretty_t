@@ -33,7 +33,7 @@ Environment Variables:
 
 
 # Relevant for internals.
-	tabsFilter = &"#? replace(sub = \"\\t\", by = \"  \")"
+	tabsFilter = &"#? replace(sub = \"\\t\", by = \"  \")\n"
 	tabsFilterIndicator = tabsFilter.replace(" ", "") # Remove spaces for comparisons.
 	multiLineStringTok = "\"\"\""
 	multiLineStringStartIndicator = [&"={multiLineStringTok}", &"discard{multiLineStringTok}"]
@@ -302,10 +302,10 @@ proc handleFile(app: var App, path: string) =
 		return
 
 	let hasTabsFilter = inputLines[0].replace(" ", "").contains(tabsFilterIndicator)
-	let inputToFormat = if hasTabsFilter: tabsToSpaces(inputLines[1..^1]) else: tabsToSpaces(inputLines)
+	let inputToFormat = if hasTabsFilter: inputLines[1..^1] else: inputLines
 
 	let tmpPath = tmpDir / extractFilename(path)
-	writeFile(tmpPath, inputToFormat)
+	writeFile(tmpPath, tabsToSpaces(inputToFormat))
 	defer: removeFile (tmpPath)
 
 	let nimprettyCmd = &"nimpretty --maxLineLen={app.cli.lineLength} --indent={spaceNum} {tmpPath}"
@@ -325,12 +325,13 @@ proc handleFile(app: var App, path: string) =
 			false
 
 	# Remove initial line break that was in `tabsToSpaces` to make nimpretty behave.
-	let res = if useTabs: tabsFilter & spacesToTabs(tmpPath) else: readFile(tmpPath).substr(1)
+	let resNoFilter = (if useTabs: spacesToTabs(tmpPath) else: readFile(tmpPath)).substr(1)
+	let res = if useTabs: tabsFilter & resNoFilter else: resNoFilter
 
 	if not app.cli.write and not app.cli.diff and not app.cli.list:
 		echo res
 
-	if res == inputToFormat:
+	if resNoFilter == inputToFormat.join("\n"):
 		return
 
 	app.hasDiff = true

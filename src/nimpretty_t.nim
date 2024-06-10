@@ -39,7 +39,7 @@ Environment Variables:
 	multiLineStringStartIndicator = [&"={multiLineStringTok}", &"discard{multiLineStringTok}"]
 	multiLineCommentStartTok = "#["
 	multiLineCommentEndTok = "]#"
-	debug = false # For now, just a manual debug switch.
+	debug = false                                     # For now, just a manual debug switch.
 
 
 let

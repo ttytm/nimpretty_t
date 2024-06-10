@@ -59,7 +59,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Build
-        run: nimble build --verbose
+        run: nimble build --verbose -d:release
       - name: Prepare artifacts
         shell: bash
         run: mv nimpretty_t ${{ matrix.artifact }}

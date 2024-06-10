@@ -2,13 +2,13 @@
 import std/[os, osproc, strformat, strutils, macros]
 
 const testPath = macros.getProjectPath()
-const tmpTestDataPath = os.getTempDir() / "nimpretty_t" / "testdata"
-const testExe = tmpTestDataPath / "nimpretty_t"
+const tmpTestPath = os.getTempDir() / "nimpretty_t" / "tests" / "tabs"
+const testExe = tmpTestPath / "nimpretty_t"
 
-if not os.dirExists(tmpTestDataPath):
-	os.createDir(tmpTestDataPath)
+if not os.dirExists(tmpTestPath):
+	os.createDir(tmpTestPath)
 
-os.copyDir(testPath / "testdata", tmpTestDataPath)
+os.copyDir(testPath / "testdata", tmpTestPath)
 
 # Build nimpretty_t.
 let buildCmd = &"nim c -o={testExe} {testPath}/../src/nimpretty_t"
@@ -17,7 +17,7 @@ assert execCmd(&"{testExe} --version") == 0
 
 # Keep track of run tests to ensure this loop always finds test files in case paths change.
 var testNum = 0
-for p in walkPattern(tmpTestDataPath & "/*.nim"):
+for p in walkPattern(tmpTestPath & "/*.nim"):
 	inc(testNum)
 	if p.endswith("_err.nim"):
 		continue
@@ -31,4 +31,4 @@ for p in walkPattern(tmpTestDataPath & "/*.nim"):
 
 assert testNum > 3
 
-os.removeDir(tmpTestDataPath)
+os.removeDir(tmpTestPath)

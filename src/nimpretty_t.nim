@@ -173,12 +173,14 @@ proc tabsToSpaces(linesToFormat: seq[string]): string =
 	var multilineCommentLvl = 0
 
 	for l in linesToFormat:
-		if l == "":
+		if len(l) <= 1:
 			spaceIndentedLines.add(l)
 			continue
 
 		# Keep track of current multiline comment state since it can be nested
 		let isMultilineComment = multiLineCommentLvl > 0
+
+		let lStrip = l.strip(trailing = false)
 
 		if not isMultilineComment:
 			# Preserve indentation in multiline strings.
@@ -188,7 +190,7 @@ proc tabsToSpaces(linesToFormat: seq[string]): string =
 					isMultilineString = false
 				continue
 
-			let lNoSpaces = l.replace(" ", "")
+			let lNoSpaces = lStrip.replace(" ", "")
 			for t in multiLineStringStartIndicator:
 				if lNoSpaces.contains(t): isMultilineString = true
 
@@ -204,8 +206,7 @@ proc tabsToSpaces(linesToFormat: seq[string]): string =
 				multilineCommentLvl += l.count(multilinecommentStartTok) - l.count(multiLineCommentEndTok)
 				continue
 
-			let lNoSpaces = l.replace(" ", "")
-			if lNoSpaces.len > 1 and ((lNoSpaces[0] == '#' and lNospaces[1] == '[') or lNoSpaces[0] != '#'):
+			if lStrip.len > 1 and ((lStrip[0] == '#' and lStrip[1] == '[') or lStrip[0] != '#'):
 				let mlcStartToks = l.split(multilinecommentStartTok)
 				if mlcStartToks.len > 1 and mlcStartToks[0].count("\"") mod 2 == 0:
 					# Ensure the token is not part of a string.
@@ -216,7 +217,7 @@ proc tabsToSpaces(linesToFormat: seq[string]): string =
 			indentLvl += 1
 
 		if indentLvl > 0:
-			spaceIndentedLines.add(spaceIndent.repeat(indentLvl) & l.strip(trailing = false))
+			spaceIndentedLines.add(spaceIndent.repeat(indentLvl) & lStrip)
 		else:
 			spaceIndentedLines.add(l)
 
@@ -239,12 +240,14 @@ proc spacesToTabs(nimprettyFormattedPath: string): string =
 	var multilineCommentLvl = 0
 
 	for l in f.lines:
-		if l == "":
+		if len(l) <= 1:
 			formattedLines.add(l)
 			continue
 
 		# Keep track of current multiline comment state since it can be nested
 		let isMultilineComment = multiLineCommentLvl > 0
+
+		let lStrip = l.strip(trailing = false)
 
 		if not isMultilineComment:
 			# Preserve indentation in multiline strings.
@@ -254,7 +257,7 @@ proc spacesToTabs(nimprettyFormattedPath: string): string =
 					isMultilineString = false
 				continue
 			else:
-				let lNoSpaces = l.replace(" ", "")
+				let lNoSpaces = lStrip.replace(" ", "")
 				for t in multiLineStringStartIndicator:
 					if lNoSpaces.contains(t): isMultilineString = true
 
@@ -266,8 +269,7 @@ proc spacesToTabs(nimprettyFormattedPath: string): string =
 				multilineCommentLvl += l.count(multilinecommentStartTok) - l.count(multiLineCommentEndTok)
 				continue
 
-			let lNoSpaces = l.replace(" ", "")
-			if lNoSpaces.len > 1 and ((lNoSpaces[0] == '#' and lNospaces[1] == '[') or lNoSpaces[0] != '#'):
+			if lStrip.len > 1 and ((lStrip[0] == '#' and lStrip[1] == '[') or lStrip[0] != '#'):
 				let mlcStartToks = l.split(multilinecommentStartTok)
 				if mlcStartToks.len > 1 and mlcStartToks[0].count("\"") mod 2 == 0:
 					# Ensure the token is not part of a string.
@@ -278,7 +280,7 @@ proc spacesToTabs(nimprettyFormattedPath: string): string =
 			indentLvl += 1
 
 		if indentLvl > 0:
-			formattedLines.add("\t".repeat(indentLvl) & l[indentLvl * spaceNum..^1])
+			formattedLines.add("\t".repeat(indentLvl) & lStrip)
 		else:
 			formattedLines.add(l)
 

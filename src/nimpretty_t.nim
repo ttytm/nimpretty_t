@@ -269,11 +269,17 @@ proc spacesToTabs(nimprettyFormattedPath: string): string =
 				multilineCommentLvl += l.count(multilinecommentStartTok) - l.count(multiLineCommentEndTok)
 				continue
 
-			if lStrip.len > 1 and ((lStrip[0] == '#' and lStrip[1] == '[') or lStrip[0] != '#'):
-				let mlcStartToks = l.split(multilinecommentStartTok)
-				if mlcStartToks.len > 1 and mlcStartToks[0].count("\"") mod 2 == 0:
-					# Ensure the token is not part of a string.
-					multilineCommentLvl += mlcStartToks.len - 1 - l.count(multiLineCommentEndTok)
+			if lStrip.len > 1:
+				if (lStrip[0] == '#' and lStrip[1] == '[') or lStrip[0] != '#':
+					let mlcStartToks = l.split(multilinecommentStartTok)
+					if mlcStartToks.len > 1 and mlcStartToks[0].count("\"") mod 2 == 0:
+						# Ensure the token is not part of a string.
+						multilineCommentLvl += mlcStartToks.len - 1 - l.count(multiLineCommentEndTok)
+				elif l[0] == ' ' and l[1] != ' ':
+					# Resolve edge base nimpretty classic bug where it adds a single leading space.
+					formattedLines.add(lStrip)
+					continue
+
 
 		var indentLvl = 0
 		while l[indentLvl * spaceNum..^1].startsWith(" "):

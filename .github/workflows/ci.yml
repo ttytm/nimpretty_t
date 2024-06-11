@@ -63,7 +63,10 @@ jobs:
         run: testament pattern 'tests/*.nim'
       - name: Build
         run: nimble build --verbose -d:release
-      - name: Format self
+      - name: Verify formatting
+        # Skip on Windows. nimpretty classic changes line endings when formatting on Windows.
+        # NOTE: Prefer to file a bug report over fixing this internally.
+        if: runner.os != 'Windows'
         run: ./nimpretty_t -d src/nimpretty_t.nim
       - name: Prepare artifacts
         shell: bash

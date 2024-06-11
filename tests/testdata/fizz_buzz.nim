@@ -1,5 +1,5 @@
 # N.B. this file is intentionally not formatted.  
-# It's `.expect` equivalent contains the expected formatting result. 
+# Its `.expect` equivalent contains the expected formatting result. 
 
 proc main( )  =  
   ## Docstring: FizzBuzz.

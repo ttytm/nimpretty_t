@@ -145,7 +145,7 @@ proc parseArgs(): CLI =
 
 	when debug: dbg(">> parseArgs: pathIdx", &"{pathIdx}")
 
-	if pathIdx == 0 and argsN > 1:
+	if pathIdx == 0:
 		quit("[Error] no input file")
 
 	# Handle paths.

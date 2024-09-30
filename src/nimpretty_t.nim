@@ -4,7 +4,7 @@
 # Source: https://github.com/ttytm/nimpretty_t
 # License: MIT
 
-import std/[os, osproc, parsecfg, streams, strformat, strutils, parseutils]
+import std/[os, osproc, parsecfg, streams, strformat, strutils, parseutils, rdstdin, terminal]
 
 
 const
@@ -25,6 +25,7 @@ Options:
                         - smart: based on the initial indentations in a file.
                         - <num>: number of spaces.
   -L  --line-length     Sets the max character line length. Default is 100.
+      --stdin           Formats input from stdin.
   -h  --help            Prints this help information.
   -v  --version         Prints version information.
 
@@ -58,6 +59,7 @@ type
 		write: bool
 		list: bool
 		diff: bool
+		isStdIn: bool
 		indentation: Indentation
 		lineLength: uint16 = 100
 		paths: seq[string]
@@ -138,6 +140,8 @@ proc parseArgs(): CLI =
 						result.indentation = spaces
 						spaceNum = indentWidth
 						spaceIndent = " ".repeat(spaceNum)
+			of "--stdin":
+				result.isStdIn = true
 			of "--":
 				pathIdx = i + 1
 				break
@@ -145,8 +149,17 @@ proc parseArgs(): CLI =
 
 	when debug: dbg(">> parseArgs: pathIdx", &"{pathIdx}")
 
+	if result.isStdIn:
+		if isatty(stdin):
+			quit(&"[Error] missing input")
+
+		let stdinTmpPath = tmpDir / "stdin.nim"
+		writeFile(stdinTmpPath, stdin.readAll())
+		result.paths.add(stdinTmpPath)
+		return
+
 	if pathIdx == 0:
-		quit("[Error] no input file")
+		quit(&"[Error] missing input file")
 
 	# Handle paths.
 	var hasInvalidPath = false
@@ -316,9 +329,9 @@ proc handleFile(app: var App, path: string) =
 	let hasTabsFilter = inputLines[0].replace(" ", "").contains(tabsFilterIndicator)
 	let inputToFormat = if hasTabsFilter: inputLines[1..^1] else: inputLines
 
-	let tmpPath = tmpDir / extractFilename(path)
+	let tmpPath = if app.cli.isStdIn: path & ".out.nim" else: tmpDir / extractFilename(path)
 	writeFile(tmpPath, tabsToSpaces(inputToFormat))
-	defer: removeFile (tmpPath)
+	defer: removeFile(tmpPath)
 
 	let nimprettyCmd = &"nimpretty --maxLineLen={app.cli.lineLength} --indent={spaceNum} {tmpPath}"
 	when debug: dbg(">>> handleFile: nimprettyCmd", nimprettyCmd)

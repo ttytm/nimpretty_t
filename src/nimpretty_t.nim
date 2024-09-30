@@ -138,6 +138,9 @@ proc parseArgs(): CLI =
 						result.indentation = spaces
 						spaceNum = indentWidth
 						spaceIndent = " ".repeat(spaceNum)
+			of "--":
+				pathIdx = i + 1
+				break
 		inc(i)
 
 	when debug: dbg(">> parseArgs: pathIdx", &"{pathIdx}")

@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.3.1"
+version       = "0.4.0"
 author        = "Turiiya"
 description   = "Formatter and diff viewer utilizing nimpretty. Allows for tab indentation."
 license       = "MIT"

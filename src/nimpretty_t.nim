@@ -354,7 +354,7 @@ proc handleFile(app: var App, path: string) =
 	let res = if useTabs: tabsFilter & "\n" & resNoFilter else: resNoFilter
 
 	if not app.cli.write and not app.cli.diff and not app.cli.list:
-		echo res
+		echo res.strip(leading = false)
 
 	if res == input:
 		return

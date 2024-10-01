@@ -60,7 +60,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Test
         if: runner.os != 'Windows'
-        run: testament pattern 'tests/*.nim'
+        run: testament pattern 'tests/test_*.nim'
       - name: Build
         run: nimble build --verbose -d:release
       - name: Verify formatting

@@ -1,19 +1,14 @@
 #? replace(sub = "\t", by = "  ")
-import std/[os, osproc, strformat, strutils, sequtils, macros]
+import std/[os, osproc, strformat, strutils, sequtils]
+import utils
 
-const testPath = macros.getProjectPath()
-const tmpTestPath = os.getTempDir() / "nimpretty_t" / "tests" / "spaces"
-const testExe = tmpTestPath / "nimpretty_t"
 
-if not os.dirExists(tmpTestPath):
-	os.createDir(tmpTestPath)
+const tmpTestPath = utils.tmpTestPath / "spaces"
+
+
+if not os.dirExists(tmpTestPath): os.createDir(tmpTestPath)
 os.copyDir(testPath / "testdata", tmpTestPath)
-
-
-# Build nimpretty_t.
-let buildCmd = &"nim c -o={testExe} {testPath}/../src/nimpretty_t"
-assert execCmd(buildCmd) == 0
-assert execCmd(&"{testExe} --version") == 0
+utils.buildNimprettyT()
 
 
 let paths = toSeq(walkPattern(tmpTestPath & "/*.nim"))

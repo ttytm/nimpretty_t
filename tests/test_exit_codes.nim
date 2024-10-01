@@ -1,18 +1,13 @@
 #? replace(sub = "\t", by = "  ")
-import std/[os, osproc, strformat, macros]
-
-const testPath = macros.getProjectPath()
-const tmpTestPath = os.getTempDir() / "nimpretty_t" / "tests" / "exit_codes"
-const testExe = tmpTestPath / "nimpretty_t"
-
-if not os.dirExists(tmpTestPath):
-	os.createDir(tmpTestPath)
+import std/[os, osproc, strformat]
+import utils
 
 
-# Build nimpretty_t.
-let buildCmd = &"nim c -o={testExe} {testPath}/../src/nimpretty_t"
-assert execCmd(buildCmd) == 0
-assert execCmd(&"{testExe} --version") == 0
+const tmpTestPath = utils.tmpTestPath / "exit_codes"
+
+
+if not os.dirExists(tmpTestPath): os.createDir(tmpTestPath)
+utils.buildNimprettyT()
 
 
 # Prepare a temporary test file.

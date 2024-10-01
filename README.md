@@ -34,6 +34,7 @@ Options:
                         - smart: based on the initial indentations in a file.
                         - <num>: number of spaces.
   -L  --line-length     Sets the max character line length. Default is 100.
+      --stdin           Formats input from stdin.
   -h  --help            Prints this help information.
   -v  --version         Prints version information.
 
